@@ -4,6 +4,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../../user/user.service';
 import { isJwtTokenUser } from '../types/jwtTokenUser';
+import { EmailNotActivatedException } from '../exceptions/EmailNotActivatedException';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -20,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (isJwtTokenUser(payload)) {
       const user = await this.userService.findUnique({ id: payload.id });
       if (user) {
-        return user;
+        return true;
       }
     }
     throw new UnauthorizedException();

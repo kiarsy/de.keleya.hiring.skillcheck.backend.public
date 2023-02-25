@@ -18,7 +18,11 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { ExtractJwt } from 'passport-jwt';
-import { EndpointIsPublic } from 'src/common/decorators/publicEndpoint.decorator';
+import {
+  EndpointIsPublic,
+  EndpointRestrictedAccess,
+  RestrictedAccessMethod,
+} from 'src/common/decorators/publicEndpoint.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -34,11 +38,13 @@ export class UserController {
 
   @Get()
   @UsePipes(new ValidationPipe({ transform: true }))
+  @EndpointRestrictedAccess('ids', RestrictedAccessMethod.query)
   async find(@Query() findUserDto: FindUserDto, @Req() req: Request) {
-    throw new NotImplementedException();
+    return this.usersService.find(findUserDto);
   }
 
   @Get(':id')
+  @EndpointRestrictedAccess('id', RestrictedAccessMethod.params, false)
   async findUnique(@Param('id', ParseIntPipe) id, @Req() req: Request) {
     throw new NotImplementedException();
   }
@@ -53,12 +59,14 @@ export class UserController {
 
   @Patch()
   @UsePipes(new ValidationPipe({ transform: true }))
+  @EndpointRestrictedAccess('id', RestrictedAccessMethod.body)
   async update(@Body() updateUserDto: UpdateUserDto, @Req() req: Request) {
     throw new NotImplementedException();
   }
 
   @Delete()
   @UsePipes(new ValidationPipe({ transform: true }))
+  @EndpointRestrictedAccess('id', RestrictedAccessMethod.body)
   async delete(@Body() deleteUserDto: DeleteUserDto, @Req() req: Request) {
     throw new NotImplementedException();
   }

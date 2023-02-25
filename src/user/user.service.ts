@@ -23,7 +23,34 @@ export class UserService {
    * @returns User[]
    */
   async find(findUserDto: FindUserDto): Promise<User[]> {
-    throw new NotImplementedException();
+    const userInclude: Prisma.UserInclude = { credential: false };
+    const whereUnique: Prisma.UserWhereInput = {
+      id: { in: findUserDto.ids },
+      is_deleted: false,
+    };
+
+    if (findUserDto.name) {
+      whereUnique.name = { contains: findUserDto.name };
+    }
+
+    if (findUserDto.updatedSince) {
+      whereUnique.updated_at = { gt: findUserDto.updatedSince };
+    }
+
+    if (findUserDto.email) {
+      whereUnique.email = { contains: findUserDto.email };
+    }
+    if (findUserDto.credentials) {
+      userInclude['credential'] = true;
+    }
+
+    console.log('findUserDto.credentials:', findUserDto.credentials);
+    return this.prisma.user.findMany({
+      skip: findUserDto.offset,
+      take: findUserDto.limit,
+      where: whereUnique,
+      include: userInclude,
+    });
   }
 
   /**
@@ -33,7 +60,20 @@ export class UserService {
    * @returns User
    */
   async findUnique(whereUnique: Prisma.UserWhereUniqueInput, includeCredentials = false): Promise<User> {
-    throw new NotImplementedException();
+    return new Promise((resolve, reject) => {
+      this.prisma.user
+        .findUnique({
+          where: whereUnique,
+          include: {
+            credential: includeCredentials,
+          },
+        })
+        .then((user) => {
+          if (user && !user.email_confirmed) throw new EmailNotActivatedException();
+          resolve(user);
+        })
+        .catch(reject);
+    });
   }
 
   /**
