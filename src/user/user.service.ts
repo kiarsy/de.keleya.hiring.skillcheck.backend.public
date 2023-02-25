@@ -45,32 +45,46 @@ export class UserService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     console.log(createUserDto);
     return new Promise(async (resolve, reject) => {
-      const user = await this.prisma.user.findFirst({
-        where: {
-          email: { equals: createUserDto.email },
-          is_deleted: false,
-        },
-      });
-      if (user) {
-        return reject(new DuplicateEmailAddressException());
-      }
-      this.prisma.user
-        .create({
-          data: {
-            email: createUserDto.email,
-            name: createUserDto.name,
-            email_activation_code: randomUUID(),
-            credential: {
-              create: {
-                hash: createUserDto.password,
-              },
+      let rowId = 0;
+      this.prisma
+        .$transaction(async (tx) => {
+          // Insert if does not exists
+          const affectedRows = await tx.$executeRaw`insert into users (name, email, email_activation_code)
+        select ${createUserDto.name},${createUserDto.email},${randomUUID()}
+        where not exists (select * from users where email=${createUserDto.email} and is_deleted=0);`;
+
+          if (affectedRows === 0) return reject(new DuplicateEmailAddressException());
+          // Select id
+          const [row] = (await tx.$queryRaw`SELECT last_insert_rowid() AS id`) as any[];
+          rowId = Number(row.id);
+
+          // Insert credentials
+          const credentials = await tx.credentials.create({
+            data: {
+              hash: createUserDto.password,
             },
-          },
+          });
+          // update user
+          await tx.user.update({
+            where: {
+              id: rowId,
+            },
+            data: {
+              credentialId: credentials.id,
+            },
+          });
         })
-        .then((user) => {
-          resolve(user);
+        .then(() => {
+          // return user
+          this.prisma.user
+            .findUnique({
+              where: { id: rowId },
+            })
+            .then((user) => {
+              resolve(user);
+            });
         })
-        .catch((e) => reject(e));
+        .catch(reject);
     });
   }
 
