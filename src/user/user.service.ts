@@ -2,10 +2,10 @@ import { Injectable, NotFoundException, NotImplementedException } from '@nestjs/
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, User } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import { DuplicateEmailAddressException } from 'src/common/exceptions/DuplicateEmailAddressException';
-import { EmailNotActivatedException } from 'src/common/exceptions/EmailNotActivatedException';
-import { JwtTokenUser } from 'src/common/types/jwtTokenUser';
-import { hashPasswordSync, matchHashedPassword } from 'src/common/utils/password';
+import { DuplicateEmailAddressException } from '../common/exceptions/DuplicateEmailAddressException';
+import { EmailNotActivatedException } from '../common/exceptions/EmailNotActivatedException';
+import { JwtTokenUser } from '../common/types/jwtTokenUser';
+import { hashPasswordSync, matchHashedPassword } from '../common/utils/password';
 import { PrismaService } from '../prisma.services';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -134,7 +134,7 @@ export class UserService {
    * @param updateUserDto
    * @returns result of update
    */
-  async update(updateUserDto: UpdateUserDto) {
+  async update(updateUserDto: UpdateUserDto): Promise<User> {
     const data: Prisma.XOR<Prisma.UserUpdateInput, Prisma.UserUncheckedUpdateInput> = {
       updatedAt: new Date(),
     };

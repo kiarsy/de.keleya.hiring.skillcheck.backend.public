@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { ExtractJwt } from 'passport-jwt';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../../user/user.service';
 import {
   IS_ENDPOINT_RESTRICTED,
   IS_PUBLIC_ENDPOINT_KEY,

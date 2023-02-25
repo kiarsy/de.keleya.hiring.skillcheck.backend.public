@@ -11,7 +11,6 @@ import {
   Req,
   HttpCode,
   UseGuards,
-  NotImplementedException,
   UsePipes,
   ValidationPipe,
   HttpStatus,
@@ -22,8 +21,8 @@ import {
   EndpointIsPublic,
   EndpointRestrictedAccess,
   RestrictedAccessMethod,
-} from 'src/common/decorators/publicEndpoint.decorator';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+} from '../common/decorators/publicEndpoint.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
