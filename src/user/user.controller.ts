@@ -14,6 +14,7 @@ import {
   NotImplementedException,
   UsePipes,
   ValidationPipe,
+  HttpStatus,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { EndpointIsPublic } from 'src/common/decorators/publicEndpoint.decorator';
@@ -44,6 +45,7 @@ export class UserController {
   @Post()
   @EndpointIsPublic()
   @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.OK)
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
