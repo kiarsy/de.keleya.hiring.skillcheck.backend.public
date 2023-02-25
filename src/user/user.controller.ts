@@ -17,6 +17,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { ExtractJwt } from 'passport-jwt';
 import { EndpointIsPublic } from 'src/common/decorators/publicEndpoint.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
@@ -63,10 +64,16 @@ export class UserController {
   }
 
   @Post('validate')
+  @EndpointIsPublic()
+  @HttpCode(HttpStatus.OK)
   async userValidateToken(@Req() req: Request) {
-    throw new NotImplementedException();
+    return new Promise((resolve) => {
+      this.usersService
+        .validateToken(ExtractJwt.fromAuthHeaderAsBearerToken()(req))
+        .then(() => resolve(true))
+        .catch(() => resolve(false));
+    });
   }
-
   @Post('authenticate')
   @EndpointIsPublic()
   @UsePipes(new ValidationPipe({ transform: true }))

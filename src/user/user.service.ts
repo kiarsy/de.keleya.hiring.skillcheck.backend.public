@@ -152,7 +152,7 @@ export class UserService {
         })
         .then((user) => {
           if (user && !user.email_confirmed) reject(new EmailNotActivatedException());
-          resolve(user && user.email_confirmed);
+          resolve((user && user.email_confirmed) ?? false);
         })
         .catch((e) => reject(e));
     });
@@ -164,7 +164,14 @@ export class UserService {
    * @param token a JWT token
    * @returns the decoded token if valid
    */
-  async validateToken(token: string) {
-    throw new NotImplementedException();
+  async validateToken(token: string): Promise<JwtTokenUser> {
+    return new Promise((resolve, reject) => {
+      this.jwtService
+        .verifyAsync<JwtTokenUser>(token, {})
+        .then((it) => {
+          resolve(it);
+        })
+        .catch(reject);
+    });
   }
 }
