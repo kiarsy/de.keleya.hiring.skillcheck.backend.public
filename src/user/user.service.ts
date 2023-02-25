@@ -140,7 +140,22 @@ export class UserService {
    * @returns true or false
    */
   async authenticate(authenticateUserDto: AuthenticateUserDto) {
-    throw new NotImplementedException();
+    return new Promise((resolve, reject) => {
+      this.prisma.user
+        .findFirst({
+          where: {
+            email: authenticateUserDto.email,
+            credential: {
+              hash: authenticateUserDto.password,
+            },
+          },
+        })
+        .then((user) => {
+          if (user && !user.email_confirmed) reject(new EmailNotActivatedException());
+          resolve(user && user.email_confirmed);
+        })
+        .catch((e) => reject(e));
+    });
   }
 
   /**

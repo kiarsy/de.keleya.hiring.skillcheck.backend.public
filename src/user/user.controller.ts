@@ -68,9 +68,20 @@ export class UserController {
   }
 
   @Post('authenticate')
+  @EndpointIsPublic()
   @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.OK)
   async userAuthenticate(@Body() authenticateUserDto: AuthenticateUserDto) {
-    throw new NotImplementedException();
+    return new Promise((resolve, reject) => {
+      this.usersService
+        .authenticate(authenticateUserDto)
+        .then((it) =>
+          resolve({
+            credentials: it,
+          }),
+        )
+        .catch((e) => reject(e));
+    });
   }
 
   @Post('token')
