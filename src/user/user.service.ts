@@ -69,7 +69,6 @@ export class UserService {
           },
         })
         .then((user) => {
-          if (user && !user.email_confirmed) throw new EmailNotActivatedException();
           resolve(user);
         })
         .catch(reject);
@@ -135,7 +134,37 @@ export class UserService {
    * @returns result of update
    */
   async update(updateUserDto: UpdateUserDto) {
-    throw new NotImplementedException();
+    const data: Prisma.XOR<Prisma.UserUpdateInput, Prisma.UserUncheckedUpdateInput> = {
+      updated_at: new Date(),
+    };
+
+    if (updateUserDto.email) {
+      data['email'] = updateUserDto.email;
+    }
+
+    if (updateUserDto.name) {
+      data['name'] = updateUserDto.name;
+    }
+
+    if (updateUserDto.password) {
+      data['credential'] = {
+        create: {
+          hash: updateUserDto.password,
+        },
+      };
+    }
+
+    return new Promise((resolve, reject) => {
+      this.prisma.user
+        .update({
+          where: { id: updateUserDto.id },
+          data,
+        })
+        .then((user) => {
+          resolve(user);
+        })
+        .catch(reject);
+    });
   }
 
   /**

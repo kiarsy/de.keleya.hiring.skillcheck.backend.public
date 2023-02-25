@@ -39,14 +39,14 @@ export class UserController {
   @Get()
   @UsePipes(new ValidationPipe({ transform: true }))
   @EndpointRestrictedAccess('ids', RestrictedAccessMethod.query)
-  async find(@Query() findUserDto: FindUserDto, @Req() req: Request) {
+  async find(@Query() findUserDto: FindUserDto) {
     return this.usersService.find(findUserDto);
   }
 
   @Get(':id')
   @EndpointRestrictedAccess('id', RestrictedAccessMethod.params, false)
-  async findUnique(@Param('id', ParseIntPipe) id, @Req() req: Request) {
-    throw new NotImplementedException();
+  async findUnique(@Param('id', ParseIntPipe) id) {
+    return this.usersService.findUnique({ id: id });
   }
 
   @Post()
@@ -59,9 +59,9 @@ export class UserController {
 
   @Patch()
   @UsePipes(new ValidationPipe({ transform: true }))
-  @EndpointRestrictedAccess('id', RestrictedAccessMethod.body)
+  @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, false)
   async update(@Body() updateUserDto: UpdateUserDto, @Req() req: Request) {
-    throw new NotImplementedException();
+    return this.usersService.update(updateUserDto);
   }
 
   @Delete()

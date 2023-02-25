@@ -12,6 +12,7 @@ import {
 } from '../decorators/publicEndpoint.decorator';
 import { Request } from 'express';
 import { JwtTokenUser } from '../types/jwtTokenUser';
+import { EmailNotActivatedException } from '../exceptions/EmailNotActivatedException';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard(['jwt']) implements CanActivate {
@@ -39,14 +40,10 @@ export class JwtAuthGuard extends AuthGuard(['jwt']) implements CanActivate {
       const tokenPayload = this.jwtService.verify<JwtTokenUser>(token, {});
       // get user based on token-id
       const user = await this.userService.findUnique({ id: tokenPayload.id });
+      if (user && !user.email_confirmed) throw new EmailNotActivatedException();
+
       // store user to request
       request['tokenUser'] = user;
-      // add a function to check the validation access
-      request['checkIDAccess'] = (id: number) => {
-        if (!user.is_admin && id != user.id) {
-          throw new UnauthorizedException();
-        }
-      };
 
       // RESTRICTED ACCESS HANDLING
       if (!user.is_admin) {
