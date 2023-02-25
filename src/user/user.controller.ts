@@ -39,11 +39,13 @@ export class UserController {
   @Get()
   @UsePipes(new ValidationPipe({ transform: true }))
   @EndpointRestrictedAccess('ids', RestrictedAccessMethod.query)
+  @HttpCode(HttpStatus.OK)
   async find(@Query() findUserDto: FindUserDto) {
     return this.usersService.find(findUserDto);
   }
 
   @Get(':id')
+  @HttpCode(HttpStatus.OK)
   @EndpointRestrictedAccess('id', RestrictedAccessMethod.params, false)
   async findUnique(@Param('id', ParseIntPipe) id) {
     return this.usersService.findUnique({ id: id });
@@ -59,12 +61,14 @@ export class UserController {
 
   @Patch()
   @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.OK)
   @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, false)
   async update(@Body() updateUserDto: UpdateUserDto, @Req() req: Request) {
     return this.usersService.update(updateUserDto);
   }
 
   @Delete()
+  @HttpCode(HttpStatus.ACCEPTED)
   @UsePipes(new ValidationPipe({ transform: true }))
   @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, false)
   async delete(@Body() deleteUserDto: DeleteUserDto, @Req() req: Request) {
@@ -73,7 +77,7 @@ export class UserController {
 
   @Post('validate')
   @EndpointIsPublic()
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   async userValidateToken(@Req() req: Request) {
     return new Promise((resolve) => {
       this.usersService
@@ -104,6 +108,7 @@ export class UserController {
   @EndpointIsPublic()
   @HttpCode(HttpStatus.OK)
   async userGetToken(@Body() authenticateUserDto: AuthenticateUserDto) {
+    console.log('SAAKAM');
     return new Promise((resolve, reject) => {
       this.usersService
         .authenticateAndGetJwtToken(authenticateUserDto)

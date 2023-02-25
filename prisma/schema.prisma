@@ -16,11 +16,10 @@ model User {
   email_activation_code String
   is_admin              Boolean      @default(false)
   is_deleted            Boolean      @default(false)
-  created_at            DateTime     @default(now())
-  updated_at            DateTime     @default(now())
+  createdAt            DateTime     @default(now())
+  updatedAt           DateTime     @default(now())
   credential            Credentials? @relation(fields: [credentialId], references: [id])
   credentialId          Int?
-
   @@map("users")
 }
 
@@ -28,8 +27,8 @@ model Credentials {
   // the credentials model
   id         Int      @id @default(autoincrement())
   hash       String
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
   User       User[]
 
   @@map("credentials")

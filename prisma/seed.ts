@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { hashPasswordSync } from '../src/common/utils/password';
 const prisma = new PrismaClient();
 
 async function main() {
@@ -12,7 +13,7 @@ async function main() {
       name: 'kia',
       credential: {
         create: {
-          hash: 'password',
+          hash: hashPasswordSync('password'),
         },
       },
     },
@@ -28,7 +29,7 @@ async function main() {
       name: 'kia2',
       credential: {
         create: {
-          hash: 'password',
+          hash: hashPasswordSync('password'),
         },
       },
     },
@@ -44,7 +45,7 @@ async function main() {
       name: 'Mama',
       credential: {
         create: {
-          hash: 'password',
+          hash: hashPasswordSync('password'),
         },
       },
     },
@@ -60,7 +61,7 @@ async function main() {
       name: 'Mama',
       credential: {
         create: {
-          hash: 'password',
+          hash: hashPasswordSync('password'),
         },
       },
     },
@@ -76,7 +77,7 @@ async function main() {
       name: 'Mama',
       credential: {
         create: {
-          hash: 'password',
+          hash: hashPasswordSync('password'),
         },
       },
     },
@@ -91,7 +92,7 @@ async function main() {
       name: 'Mama',
       credential: {
         create: {
-          hash: 'password',
+          hash: hashPasswordSync('password'),
         },
       },
     },
@@ -107,7 +108,7 @@ async function main() {
       name: 'Mama',
       credential: {
         create: {
-          hash: 'password',
+          hash: hashPasswordSync('password'),
         },
       },
     },

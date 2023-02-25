@@ -22,6 +22,5 @@ CREATE TABLE "new_users" (
 INSERT INTO "new_users" ("created_at", "credentialId", "email", "email_confirmed", "id", "is_admin", "is_deleted", "name", "updated_at") SELECT "created_at", "credentialId", "email", "email_confirmed", "id", "is_admin", "is_deleted", "name", "updated_at" FROM "users";
 DROP TABLE "users";
 ALTER TABLE "new_users" RENAME TO "users";
-CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 PRAGMA foreign_key_check;
 PRAGMA foreign_keys=ON;

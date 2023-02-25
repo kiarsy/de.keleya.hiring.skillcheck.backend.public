@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto';
 import { DuplicateEmailAddressException } from 'src/common/exceptions/DuplicateEmailAddressException';
 import { EmailNotActivatedException } from 'src/common/exceptions/EmailNotActivatedException';
 import { JwtTokenUser } from 'src/common/types/jwtTokenUser';
+import { hashPasswordSync, matchHashedPassword } from 'src/common/utils/password';
 import { PrismaService } from '../prisma.services';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -34,7 +35,7 @@ export class UserService {
     }
 
     if (findUserDto.updatedSince) {
-      whereUnique.updated_at = { gt: findUserDto.updatedSince };
+      whereUnique.updatedAt = { gt: findUserDto.updatedSince };
     }
 
     if (findUserDto.email) {
@@ -101,7 +102,7 @@ export class UserService {
           // Insert credentials
           const credentials = await tx.credentials.create({
             data: {
-              hash: createUserDto.password,
+              hash: hashPasswordSync(createUserDto.password),
             },
           });
           // update user
@@ -136,7 +137,7 @@ export class UserService {
    */
   async update(updateUserDto: UpdateUserDto) {
     const data: Prisma.XOR<Prisma.UserUpdateInput, Prisma.UserUncheckedUpdateInput> = {
-      updated_at: new Date(),
+      updatedAt: new Date(),
     };
 
     if (updateUserDto.email) {
@@ -150,7 +151,7 @@ export class UserService {
     if (updateUserDto.password) {
       data['credential'] = {
         create: {
-          hash: updateUserDto.password,
+          hash: hashPasswordSync(updateUserDto.password),
         },
       };
     }
@@ -207,24 +208,25 @@ export class UserService {
       this.prisma.user
         .findFirst({
           where: {
-            email: authenticateUserDto.email,
-            credential: {
-              hash: authenticateUserDto.password,
-            },
+            email: { contains: authenticateUserDto.email },
           },
+          include: { credential: true },
         })
         .then((user) => {
           if (user) {
+            if (!matchHashedPassword(authenticateUserDto.password, user.credential.hash)) {
+              return reject(new EmailNotActivatedException());
+            }
             if (!user.email_confirmed) {
-              reject(new EmailNotActivatedException());
+              return reject(new EmailNotActivatedException());
             }
             const payload: JwtTokenUser = {
               id: user.id,
               username: user.email,
             };
-            resolve(this.jwtService.sign(payload, {}));
+            return resolve(this.jwtService.sign(payload, {}));
           } else {
-            reject(new NotFoundException('', 'Email/Password is invalid.'));
+            return resolve(new NotFoundException('', 'Email/Password is invalid.'));
           }
         })
         .catch(reject);
@@ -243,18 +245,19 @@ export class UserService {
         .findFirst({
           where: {
             email: authenticateUserDto.email,
-            credential: {
-              hash: authenticateUserDto.password,
-            },
           },
+          include: { credential: true },
         })
         .then((user) => {
-          if (user && !user.email_confirmed) reject(new EmailNotActivatedException());
+          if (!matchHashedPassword(authenticateUserDto.password, user.credential.hash)) {
+            return reject(new EmailNotActivatedException());
+          }
+          if (user && !user.email_confirmed) return reject(new EmailNotActivatedException());
 
-          if (user) resolve((user && user.email_confirmed) ?? false);
-          else reject(new NotFoundException('', 'Email/Password is invalid.'));
+          if (user) return resolve((user && user.email_confirmed) ?? false);
+          else return reject(new NotFoundException('', 'Email/Password is invalid.'));
         })
-        .catch((e) => reject(e));
+        .catch(reject);
     });
   }
 
