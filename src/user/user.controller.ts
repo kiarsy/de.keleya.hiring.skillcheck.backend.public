@@ -66,9 +66,9 @@ export class UserController {
 
   @Delete()
   @UsePipes(new ValidationPipe({ transform: true }))
-  @EndpointRestrictedAccess('id', RestrictedAccessMethod.body)
+  @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, false)
   async delete(@Body() deleteUserDto: DeleteUserDto, @Req() req: Request) {
-    throw new NotImplementedException();
+    return this.usersService.delete(deleteUserDto);
   }
 
   @Post('validate')

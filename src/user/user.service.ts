@@ -44,7 +44,6 @@ export class UserService {
       userInclude['credential'] = true;
     }
 
-    console.log('findUserDto.credentials:', findUserDto.credentials);
     return this.prisma.user.findMany({
       skip: findUserDto.offset,
       take: findUserDto.limit,
@@ -59,17 +58,19 @@ export class UserService {
    * @param whereUnique
    * @returns User
    */
-  async findUnique(whereUnique: Prisma.UserWhereUniqueInput, includeCredentials = false): Promise<User> {
+  async findUnique(whereUnique: Prisma.UserWhereInput, includeCredentials = false): Promise<User> {
+    whereUnique = { ...whereUnique, is_deleted: false };
     return new Promise((resolve, reject) => {
       this.prisma.user
-        .findUnique({
+        .findFirst({
           where: whereUnique,
           include: {
             credential: includeCredentials,
           },
         })
         .then((user) => {
-          resolve(user);
+          if (user) resolve(user);
+          else reject(new NotFoundException(undefined, 'User Not found'));
         })
         .catch(reject);
     });
@@ -178,7 +179,21 @@ export class UserService {
    * @returns results of users and credentials table modification
    */
   async delete(deleteUserDto: DeleteUserDto) {
-    throw new NotImplementedException();
+    return new Promise((resolve, reject) => {
+      this.prisma.user
+        .update({
+          where: { id: deleteUserDto.id },
+          data: { is_deleted: true, name: '(deleted)' },
+        })
+        .then((user) => {
+          if (user) {
+            resolve({ users: user });
+          } else {
+            reject(new NotFoundException('User not found.'));
+          }
+        })
+        .catch(reject);
+    });
   }
 
   /**
@@ -235,7 +250,9 @@ export class UserService {
         })
         .then((user) => {
           if (user && !user.email_confirmed) reject(new EmailNotActivatedException());
-          resolve((user && user.email_confirmed) ?? false);
+
+          if (user) resolve((user && user.email_confirmed) ?? false);
+          else reject(new NotFoundException('', 'Email/Password is invalid.'));
         })
         .catch((e) => reject(e));
     });

@@ -17,6 +17,9 @@ export class QueryExceptionFilter {
       case 'P2002':
         message = 'Unique Constraint Error';
         break;
+      case 'P2025':
+        message = 'Not Found';
+        break;
     }
 
     const msg = {
