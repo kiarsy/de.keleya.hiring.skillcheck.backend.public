@@ -1,8 +1,10 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable, NotFoundException, NotImplementedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, User } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { DuplicateEmailAddressException } from 'src/common/exceptions/DuplicateEmailAddressException';
+import { EmailNotActivatedException } from 'src/common/exceptions/EmailNotActivatedException';
+import { JwtTokenUser } from 'src/common/types/jwtTokenUser';
 import { PrismaService } from '../prisma.services';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -103,7 +105,32 @@ export class UserService {
    * @returns a JWT token
    */
   async authenticateAndGetJwtToken(authenticateUserDto: AuthenticateUserDto) {
-    throw new NotImplementedException();
+    return new Promise((resolve, reject) => {
+      this.prisma.user
+        .findFirst({
+          where: {
+            email: authenticateUserDto.email,
+            credential: {
+              hash: authenticateUserDto.password,
+            },
+          },
+        })
+        .then((user) => {
+          if (user) {
+            if (!user.email_confirmed) {
+              reject(new EmailNotActivatedException());
+            }
+            const payload: JwtTokenUser = {
+              id: user.id,
+              username: user.email,
+            };
+            resolve(this.jwtService.sign(payload, {}));
+          } else {
+            reject(new NotFoundException('', 'Email/Password is invalid.'));
+          }
+        })
+        .catch(reject);
+    });
   }
 
   /**

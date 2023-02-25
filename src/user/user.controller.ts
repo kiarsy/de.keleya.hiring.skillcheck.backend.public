@@ -75,7 +75,18 @@ export class UserController {
 
   @Post('token')
   @UsePipes(new ValidationPipe({ transform: true }))
+  @EndpointIsPublic()
+  @HttpCode(HttpStatus.OK)
   async userGetToken(@Body() authenticateUserDto: AuthenticateUserDto) {
-    throw new NotImplementedException();
+    return new Promise((resolve, reject) => {
+      this.usersService
+        .authenticateAndGetJwtToken(authenticateUserDto)
+        .then((it) =>
+          resolve({
+            token: it,
+          }),
+        )
+        .catch(reject);
+    });
   }
 }
