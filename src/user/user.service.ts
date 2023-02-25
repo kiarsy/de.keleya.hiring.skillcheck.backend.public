@@ -84,7 +84,6 @@ export class UserService {
    * @returns result of create
    */
   async create(createUserDto: CreateUserDto): Promise<User> {
-    console.log(createUserDto);
     return new Promise(async (resolve, reject) => {
       let rowId = 0;
       this.prisma

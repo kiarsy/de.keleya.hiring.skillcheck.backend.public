@@ -108,7 +108,6 @@ export class UserController {
   @EndpointIsPublic()
   @HttpCode(HttpStatus.OK)
   async userGetToken(@Body() authenticateUserDto: AuthenticateUserDto) {
-    console.log('SAAKAM');
     return new Promise((resolve, reject) => {
       this.usersService
         .authenticateAndGetJwtToken(authenticateUserDto)
