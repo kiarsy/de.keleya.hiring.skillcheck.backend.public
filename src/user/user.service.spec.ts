@@ -1,5 +1,4 @@
 import { NotFoundException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { EmailNotActivatedException } from '../common/exceptions/EmailNotActivatedException';
 import { WrongCredentialException } from '../common/exceptions/WrongCredentialException';
 import { DuplicateEmailAddressException } from '../common/exceptions/DuplicateEmailAddressException';
@@ -20,6 +19,7 @@ describe('UserService', () => {
       findFirst: jest.fn(),
       update: jest.fn(),
       findUnique: jest.fn(),
+      create: jest.fn(),
     },
     credentials: {
       create: jest.fn(),
@@ -29,7 +29,9 @@ describe('UserService', () => {
 
   const jwtService = {
     sign: jest.fn(),
+    verifyAsync: jest.fn(),
   };
+
   beforeAll(async () => {
     userService = new UserService(prisma as any, jwtService as any);
   });
@@ -143,6 +145,7 @@ describe('UserService', () => {
           .mockReturnValue(Promise.resolve({ id: 1, name: createUserDto.name, email: createUserDto.email })),
       };
 
+      jest.spyOn(HashPassword, 'hashPasswordSync').mockReturnValueOnce('');
       const result = await userService.create(createUserDto);
 
       // Assertions
@@ -204,6 +207,7 @@ describe('UserService', () => {
 
       // Mock the PrismaClient instance to return the user when updating
       prisma.user.update = jest.fn().mockResolvedValueOnce(user);
+      jest.spyOn(HashPassword, 'hashPasswordSync').mockReturnValueOnce('');
 
       // Call the update method
       const result = await userService.update(updateUserDto);
@@ -291,6 +295,7 @@ describe('UserService', () => {
       prisma.user.findFirst.mockResolvedValue(mockUser);
       const token = 'mockToken';
       jwtService.sign.mockReturnValue(token);
+      jest.spyOn(HashPassword, 'matchHashedPassword').mockReturnValueOnce(true);
 
       const result = await userService.authenticateAndGetJwtToken(authenticateUserDto);
 
@@ -328,7 +333,7 @@ describe('UserService', () => {
         },
       };
       prisma.user.findFirst.mockResolvedValue(mockUser);
-      (HashPassword as any).matchHashedPassword = jest.fn().mockReturnValue(false);
+      jest.spyOn(HashPassword, 'matchHashedPassword').mockReturnValueOnce(false);
 
       await expect(userService.authenticateAndGetJwtToken({ ...authenticateUserDto })).rejects.toThrow(
         WrongCredentialException,
@@ -341,6 +346,109 @@ describe('UserService', () => {
       await expect(userService.authenticateAndGetJwtToken(authenticateUserDto)).rejects.toThrow(
         WrongCredentialException,
       );
+    });
+  });
+
+  describe('authenticate', () => {
+    it('should authenticate user with correct email and password', async () => {
+      // Create a user with a hashed password
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        email_confirmed: true,
+        credential: {
+          hash: 'hashedPassword',
+        },
+      };
+      jest.spyOn(HashPassword, 'matchHashedPassword').mockReturnValueOnce(true);
+
+      prisma.user.findFirst.mockResolvedValue(mockUser);
+
+      // Call the authenticate method with correct email and password
+      const result = await userService.authenticate({
+        email: 'test@example.com',
+        password: 'password',
+      });
+
+      // Expect the result to be true
+      expect(result).toBe(true);
+    });
+
+    it('should reject authentication with incorrect password', async () => {
+      // Create a user with a hashed password
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        email_confirmed: true,
+        credential: {
+          hash: 'hashedPassword',
+        },
+      };
+      jest.spyOn(HashPassword, 'matchHashedPassword').mockReturnValueOnce(false);
+
+      prisma.user.findFirst.mockResolvedValue(mockUser);
+
+      // Call the authenticate method with incorrect password
+      await expect(
+        userService.authenticate({
+          email: 'test@example.com',
+          password: 'wrongpassword',
+        }),
+      ).rejects.toThrow(WrongCredentialException);
+    });
+
+    it('should reject authentication with non-existent email', async () => {
+      prisma.user.findFirst.mockResolvedValue(null);
+
+      await expect(
+        userService.authenticate({
+          email: 'nonexistent@example.com',
+          password: 'password',
+        }),
+      ).rejects.toThrow(WrongCredentialException);
+    });
+
+    it('should reject authentication with unconfirmed email', async () => {
+      // Create a user with an unconfirmed email and a hashed password
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        email_confirmed: false,
+        credential: {
+          hash: 'hashedPassword',
+        },
+      };
+      jest.spyOn(HashPassword, 'matchHashedPassword').mockReturnValueOnce(true);
+
+      prisma.user.findFirst.mockResolvedValue(mockUser);
+
+      // Call the authenticate method with correct email and password
+      await expect(
+        userService.authenticate({
+          email: 'test@example.com',
+          password: 'password',
+        }),
+      ).rejects.toThrow(EmailNotActivatedException);
+    });
+  });
+
+  describe('validateToken', () => {
+    it('when given a valid token > should return the decoded token', async () => {
+      const token = 'valid_token';
+      const decodedToken = { id: 1, username: 'testuser' };
+      jwtService.verifyAsync.mockResolvedValueOnce(decodedToken);
+      const result = await userService.validateToken(token);
+
+      expect(result).toEqual(decodedToken);
+      expect(jwtService.verifyAsync).toHaveBeenCalledWith(token, {});
+    });
+    it('when given an invalid token > should reject with an error', async () => {
+      const token = 'invalid_token';
+      const error = new Error('Invalid token');
+      jwtService.verifyAsync.mockRejectedValueOnce(error);
+
+      await expect(userService.validateToken(token)).rejects.toThrow(error);
+      expect(jwtService.verifyAsync).toHaveBeenCalledWith(token, {});
     });
   });
 });
