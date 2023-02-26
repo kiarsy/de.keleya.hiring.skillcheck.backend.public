@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException, NotImplementedException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, User } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import { WrongCredentialException } from 'src/common/exceptions/WrongCredentialException';
+import { WrongCredentialException } from '../common/exceptions/WrongCredentialException';
 import { DuplicateEmailAddressException } from '../common/exceptions/DuplicateEmailAddressException';
 import { EmailNotActivatedException } from '../common/exceptions/EmailNotActivatedException';
 import { JwtTokenUser } from '../common/types/jwtTokenUser';
