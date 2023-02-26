@@ -17,11 +17,8 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { ExtractJwt } from 'passport-jwt';
-import {
-  EndpointIsPublic,
-  EndpointRestrictedAccess,
-  RestrictedAccessMethod,
-} from '../common/decorators/publicEndpoint.decorator';
+import { EndpointRestrictedAccess, RestrictedAccessMethod } from '../common/decorators/RestrictedAccess.decorator';
+import { EndpointIsPublic } from '../common/decorators/publicEndpoint.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';

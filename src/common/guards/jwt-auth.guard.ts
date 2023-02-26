@@ -1,18 +1,14 @@
-import { CanActivate, ExecutionContext, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { ExtractJwt } from 'passport-jwt';
 import { UserService } from '../../user/user.service';
-import {
-  IS_ENDPOINT_RESTRICTED,
-  IS_PUBLIC_ENDPOINT_KEY,
-  RestrictedAccessMethod,
-  RestrictedAccessType,
-} from '../decorators/publicEndpoint.decorator';
+import { IS_PUBLIC_ENDPOINT_KEY } from '../decorators/publicEndpoint.decorator';
 import { Request } from 'express';
 import { JwtTokenUser } from '../types/jwtTokenUser';
 import { EmailNotActivatedException } from '../exceptions/EmailNotActivatedException';
+import { IS_ENDPOINT_RESTRICTED, RestrictedAccessType } from '../decorators/RestrictedAccess.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard(['jwt']) implements CanActivate {
