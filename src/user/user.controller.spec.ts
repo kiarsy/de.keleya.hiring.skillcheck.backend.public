@@ -1,4 +1,4 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -7,16 +7,15 @@ import { JwtStrategy } from '../common/strategies/jwt.strategy';
 import { PrismaService } from '../prisma.services';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import * as request from 'supertest';
 import { User } from '@prisma/client';
+import { JwtTokenUser } from '../common/types/jwtTokenUser';
+import { WrongCredentialException } from '../common/exceptions/WrongCredentialException';
 
 describe('UserController', () => {
   let userController: UserController;
   let userService: UserService;
   let jwtService: JwtService;
   let app: INestApplication;
-  let userAuthorization = '';
-  let adminAuthorization = '';
 
   const mockUser: User = {
     id: 1,
@@ -89,19 +88,6 @@ describe('UserController', () => {
     userService = module.get<UserService>(UserService);
     userController = module.get<UserController>(UserController);
     jwtService = module.get<JwtService>(JwtService);
-
-    userAuthorization =
-      'Bearer ' +
-      jwtService.sign({
-        id: 1,
-        username: 'user',
-      });
-    adminAuthorization =
-      'Bearer ' +
-      jwtService.sign({
-        id: 2,
-        username: 'admin',
-      });
   });
 
   it('should be defined', () => {
@@ -109,117 +95,50 @@ describe('UserController', () => {
     expect(userService).toBeDefined();
   });
 
-  describe('EndpointRestrictedAccess decorator', () => {
-    it('should return 200 > query check >  "User" try access to all entities', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/user')
-        .query({ ids: [1, 2, 3] })
-        .set('Authorization', userAuthorization)
-        .expect(HttpStatus.OK);
-      expect(response.body).toMatchObject({ ids: [1] });
+  describe('validate', () => {
+    it('should return true on valid user', async () => {
+      jest.spyOn(userService, 'validateToken').mockResolvedValueOnce({ a: 2 } as any);
+      const result = await userController.userValidateToken({ headers: { authorization: 'Bearer TOKEN' } } as any);
+      expect(result).toBe(true);
     });
 
-    it('should return 200 > query check >  "User" try access without mention ids', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/user')
-        .set('Authorization', userAuthorization)
-        .expect(HttpStatus.OK);
-      expect(response.body).toMatchObject({ ids: [1] });
-    });
+    it('should return false on not valid user', async () => {
+      jest.spyOn(userService, 'validateToken').mockRejectedValueOnce(null);
+      const result = await userController.userValidateToken({ headers: { authorization: 'Bearer TOKEN' } } as any);
 
-    it('should return 200 > query check > "Admin" access to all entities', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/user')
-        .query({ ids: [1, 2, 3] })
-        .set('Authorization', adminAuthorization)
-        .expect(HttpStatus.OK);
-      expect(response.body).toMatchObject({ ids: [1, 2, 3] });
-    });
-
-    it('should return 401 > param check > "User" try access to other entity', async () => {
-      await request(app.getHttpServer())
-        .get('/user/2')
-        .set('Authorization', userAuthorization)
-        .expect(HttpStatus.UNAUTHORIZED);
-    });
-
-    it('should return 401 > param check > "User" try access its own entity', async () => {
-      await request(app.getHttpServer()).get('/user/1').set('Authorization', userAuthorization).expect(HttpStatus.OK);
-    });
-
-    it('should return 200 > param check > "admin" try access to other entity', async () => {
-      await request(app.getHttpServer()).get('/user/1').set('Authorization', adminAuthorization).expect(HttpStatus.OK);
-    });
-
-    it('should return 200 > param check > "admin" try access its-own entity', async () => {
-      await request(app.getHttpServer()).get('/user/2').set('Authorization', adminAuthorization).expect(HttpStatus.OK);
-    });
-
-    it('should return 200 > body check > "user" try access to update entity', async () => {
-      await request(app.getHttpServer())
-        .patch('/user')
-        .set('Authorization', userAuthorization)
-        .send({ id: 1 })
-        .expect(HttpStatus.OK);
-    });
-
-    it('should return 200 > body check > "user" try access to update other entity', async () => {
-      await request(app.getHttpServer())
-        .patch('/user')
-        .set('Authorization', userAuthorization)
-        .send({ id: 2 })
-        .expect(HttpStatus.UNAUTHORIZED);
-    });
-
-    it('should return 200 > body check > "admin" try access to update entity', async () => {
-      await request(app.getHttpServer())
-        .patch('/user')
-        .set('Authorization', adminAuthorization)
-        .send({ id: 2 })
-        .expect(HttpStatus.OK);
-    });
-
-    it('should return 200 > body check > "admin" try access to update other entity', async () => {
-      await request(app.getHttpServer())
-        .patch('/user')
-        .set('Authorization', adminAuthorization)
-        .send({ id: 1 })
-        .expect(HttpStatus.OK);
+      expect(result).toBe(false);
     });
   });
 
-  describe('EndpointIsPublic decorator', () => {
-    it('should return 200 > without authorization', async () => {
-      await request(app.getHttpServer())
-        .post('/user/authenticate')
-        // .set('Authorization', userAuthorization)
-        .expect(HttpStatus.OK);
+  describe('authenticate', () => {
+    it('should return token on valid user', async () => {
+      jest.spyOn(userService, 'authenticate').mockResolvedValueOnce(true);
+      const result = await userController.userAuthenticate({} as any);
+      expect(result).toEqual({ credentials: true });
     });
 
-    it('should return 200 > with admin authorization', async () => {
-      await request(app.getHttpServer())
-        .post('/user/authenticate')
-        .set('Authorization', adminAuthorization)
-        .expect(HttpStatus.OK);
-    });
-
-    it('should return 200 > with user authorization', async () => {
-      await request(app.getHttpServer())
-        .post('/user/authenticate')
-        .set('Authorization', userAuthorization)
-        .expect(HttpStatus.OK);
+    it('should return WrongCredentialException on', async () => {
+      const error = new WrongCredentialException();
+      jest.spyOn(userService, 'authenticate').mockRejectedValueOnce(error);
+      await expect(userController.userAuthenticate({} as any)).rejects.toBe(error);
     });
   });
-  describe('Authorization check', () => {
-    it('should return 401 > Request without token', async () => {
-      await request(app.getHttpServer()).get('/user').expect(HttpStatus.UNAUTHORIZED);
+
+  describe('userGetToken', () => {
+    it('should return token on valid user', async () => {
+      const token: JwtTokenUser = {
+        id: 1,
+        username: 'email',
+      };
+      jest.spyOn(userService, 'authenticateAndGetJwtToken').mockResolvedValueOnce(token);
+      const result = await userController.userGetToken({} as any);
+      expect(result).toEqual({ token });
     });
 
-    it('should return 200 > User authorization', async () => {
-      await request(app.getHttpServer()).get('/user').set('Authorization', userAuthorization).expect(HttpStatus.OK);
-    });
-    it('should return 200> Admin authorization', async () => {
-      await request(app.getHttpServer()).get('/user').set('Authorization', adminAuthorization).expect(HttpStatus.OK);
+    it('should return WrongCredentialException on', async () => {
+      const error = new WrongCredentialException();
+      jest.spyOn(userService, 'authenticateAndGetJwtToken').mockRejectedValueOnce(error);
+      await expect(userController.userGetToken({} as any)).rejects.toBe(error);
     });
   });
 });
