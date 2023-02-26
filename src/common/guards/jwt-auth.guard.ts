@@ -48,40 +48,13 @@ export class JwtAuthGuard extends AuthGuard(['jwt']) implements CanActivate {
       // RESTRICTED ACCESS HANDLING
       if (!user.is_admin) {
         const IsEndpointRestricted = getMeta(IS_ENDPOINT_RESTRICTED) as RestrictedAccessType;
-
-        // IF enabled
         if (IsEndpointRestricted) {
-          //if Throw is enabled
-          let badAccess = false;
-          if (!IsEndpointRestricted.replaceIfHappened) {
-            switch (IsEndpointRestricted.method) {
-              case RestrictedAccessMethod.body:
-                badAccess = request.body[IsEndpointRestricted.field] != user.id;
-                break;
-              case RestrictedAccessMethod.params:
-                badAccess = request.params[IsEndpointRestricted.field] != String(user.id);
-                break;
-              case RestrictedAccessMethod.query:
-                badAccess = request.query[IsEndpointRestricted.field] != String(user.id);
-                break;
-            }
-            if (badAccess) {
-              throw new UnauthorizedException();
-            }
-          } else {
-            // IF replace is enable
-            switch (IsEndpointRestricted.method) {
-              case RestrictedAccessMethod.body:
-                request.body[IsEndpointRestricted.field] = user.id;
-                break;
-              case RestrictedAccessMethod.params:
-                request.params[IsEndpointRestricted.field] = String(user.id);
-                break;
-              case RestrictedAccessMethod.query:
-                request.query[IsEndpointRestricted.field] = String(user.id);
-                break;
-            }
-          }
+          IsEndpointRestricted.validator.validate(
+            request,
+            user,
+            IsEndpointRestricted.field,
+            IsEndpointRestricted.throwException,
+          );
         }
       }
     }

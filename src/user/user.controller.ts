@@ -45,7 +45,7 @@ export class UserController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @EndpointRestrictedAccess('id', RestrictedAccessMethod.params, false)
+  @EndpointRestrictedAccess('id', RestrictedAccessMethod.params, true)
   async findUnique(@Param('id', ParseIntPipe) id) {
     return this.usersService.findUnique({ id: id });
   }
@@ -61,7 +61,7 @@ export class UserController {
   @Patch()
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
-  @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, false)
+  @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, true)
   async update(@Body() updateUserDto: UpdateUserDto, @Req() req: Request) {
     return this.usersService.update(updateUserDto);
   }
@@ -69,7 +69,7 @@ export class UserController {
   @Delete()
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ transform: true }))
-  @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, false)
+  @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, true)
   async delete(@Body() deleteUserDto: DeleteUserDto, @Req() req: Request) {
     return this.usersService.delete(deleteUserDto);
   }
