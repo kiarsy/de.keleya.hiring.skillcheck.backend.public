@@ -76,7 +76,7 @@ export class UserController {
 
   @Post('validate')
   @EndpointIsPublic()
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.OK)
   async userValidateToken(@Req() req: Request) {
     return new Promise((resolve) => {
       this.usersService
