@@ -80,20 +80,19 @@ yarn test
 ![postman](Screen%20Shot%202023-02-26%20at%2013.57.56.png)
 
 **Notes**
-- the `Get specific user` endpoint was in the admin folder therefore it had `adminToken`. but its test expected to receive 401 error on accessing userid:2. IDK if it was a misplace or mistake in the test. to fix this issue I moved it to `As User` folder.
+- the `Get specific user` endpoint was in the admin folder therefore it had `adminToken`. but its test expected to receive a 401 error on accessing userid:2. IDK if it was a misplace or mistake in the test. to fix this issue I moved it to the `As User` folder.
 - the `Create new user` endpoint can pass the test only the first time, the next time it will raise an exception, in my design email is a unique field.
 
 #### Database design
-- the fact that password is saved in another table than the user has following benefits, I didn't change that design though. 
-  - (security wise): in future this system can be upgraded in a way to forbids to user use an old password when user forget password.
-  - also we can have information about the datetime of last password, in case of data leak, we can inform users to change password, and based on that field we can detect which users still using a leak password and force them to change.
-  - I also add a field for email_confirmation to understand if user activate the validate the email entered or not.
-  - User with email_confirmation:false consider disable users.
+- the fact that the password is saved in another table then the user has the following benefits, I didn't change that design though. 
+  - (security wise): in the future, this system can be upgraded in a way to forbid user use an old password when a user forgets their password.
+  - also we can have information about the DateTime of the last password, in case of a data leak, we can inform users to change passwords, and based on that field we can detect which users still using a leaked password and force them to change.
+  - I also add a field for email_confirmation to understand if the user activate the validate the email entered or not.
+  - User with email_confirmation: false consider disable users.
 
 #### `Create` Endpoint
-- when we delete a user, it is going to be soft delete, and we still keep the information in the user table, this force us to not use unique key on the email field.
-- but the system must prevent users to create a new account with already exist email(not deleted).
-- to accomplish this, when user requests for create user, we have to check that this email is not exist(not delete) and then create the user. 
-- I use raw sql among with `transaction` in this function to have a single sql command to `check email existence` and `create` the user if it does not already exist. to use transaction in the way that I used, I had to upgrade prisma to `4.8.0`.
-- this function can handle concurrency under high load and wont let two request at same time create two users with same email, one will fail.
-  
+- when we delete a user, it is going to be soft delete, and we still keep the information in the user table, this forces us to not use the unique key on the email field.
+- but the system must prevent users to create a new account with an already existing email(not deleted).
+- to accomplish this, when someone requests to create a user, we have to check this email is not exist(not delete) and then create the user. 
+- I use raw SQL among with `transaction` in this function to have a single SQL command to `check email existence` and `create` the user if it does not already exist. to use transactions in the way that I used, I had to upgrade Prisma to `4.8.0`.
+- this function can handle concurrency under high load and won't let two requests at the same time create two users with the same email, one will fail.
