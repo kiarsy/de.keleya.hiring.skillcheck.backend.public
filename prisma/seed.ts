@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { hashPasswordSync } from '../src/common/utils/password';
+import { HashPassword } from '../src/common/utils/password';
 const prisma = new PrismaClient();
 
 async function main() {
@@ -13,7 +13,7 @@ async function main() {
       name: 'kia',
       credential: {
         create: {
-          hash: hashPasswordSync('password'),
+          hash: HashPassword.hashPasswordSync('password'),
         },
       },
     },
@@ -29,7 +29,7 @@ async function main() {
       name: 'kia2',
       credential: {
         create: {
-          hash: hashPasswordSync('password'),
+          hash: HashPassword.hashPasswordSync('password'),
         },
       },
     },
@@ -45,7 +45,7 @@ async function main() {
       name: 'Mama',
       credential: {
         create: {
-          hash: hashPasswordSync('password'),
+          hash: HashPassword.hashPasswordSync('password'),
         },
       },
     },
@@ -61,7 +61,7 @@ async function main() {
       name: 'Mama',
       credential: {
         create: {
-          hash: hashPasswordSync('password'),
+          hash: HashPassword.hashPasswordSync('password'),
         },
       },
     },
@@ -77,7 +77,7 @@ async function main() {
       name: 'Mama',
       credential: {
         create: {
-          hash: hashPasswordSync('password'),
+          hash: HashPassword.hashPasswordSync('password'),
         },
       },
     },
@@ -92,7 +92,7 @@ async function main() {
       name: 'Mama',
       credential: {
         create: {
-          hash: hashPasswordSync('password'),
+          hash: HashPassword.hashPasswordSync('password'),
         },
       },
     },
@@ -108,7 +108,7 @@ async function main() {
       name: 'Mama',
       credential: {
         create: {
-          hash: hashPasswordSync('password'),
+          hash: HashPassword.hashPasswordSync('password'),
         },
       },
     },
