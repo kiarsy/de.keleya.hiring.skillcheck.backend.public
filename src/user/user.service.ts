@@ -6,7 +6,7 @@ import { WrongCredentialException } from '../common/exceptions/WrongCredentialEx
 import { DuplicateEmailAddressException } from '../common/exceptions/DuplicateEmailAddressException';
 import { EmailNotActivatedException } from '../common/exceptions/EmailNotActivatedException';
 import { JwtTokenUser } from '../common/types/jwtTokenUser';
-import { hashPasswordSync, matchHashedPassword } from '../common/utils/password';
+import { HashPassword } from '../common/utils/password';
 import { PrismaService } from '../prisma.services';
 import { AuthenticateUserDto } from './dto/authenticate-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -102,7 +102,7 @@ export class UserService {
           // Insert credentials
           const credentials = await tx.credentials.create({
             data: {
-              hash: hashPasswordSync(createUserDto.password),
+              hash: HashPassword.hashPasswordSync(createUserDto.password),
             },
           });
           // update user
@@ -151,7 +151,7 @@ export class UserService {
     if (updateUserDto.password) {
       data['credential'] = {
         create: {
-          hash: hashPasswordSync(updateUserDto.password),
+          hash: HashPassword.hashPasswordSync(updateUserDto.password),
         },
       };
     }
@@ -214,11 +214,11 @@ export class UserService {
         })
         .then((user) => {
           if (user) {
-            if (!matchHashedPassword(authenticateUserDto.password, user.credential.hash)) {
-              return reject(new WrongCredentialException());
-            }
             if (!user.email_confirmed) {
               return reject(new EmailNotActivatedException());
+            }
+            if (!HashPassword.matchHashedPassword(authenticateUserDto.password, user.credential.hash)) {
+              return reject(new WrongCredentialException());
             }
             const payload: JwtTokenUser = {
               id: user.id,
@@ -226,7 +226,7 @@ export class UserService {
             };
             return resolve(this.jwtService.sign(payload, {}));
           } else {
-            return resolve(new WrongCredentialException());
+            return reject(new WrongCredentialException());
           }
         })
         .catch(reject);
@@ -250,7 +250,7 @@ export class UserService {
         })
         .then((user) => {
           if (user) {
-            if (!matchHashedPassword(authenticateUserDto.password, user.credential.hash)) {
+            if (!HashPassword.matchHashedPassword(authenticateUserDto.password, user.credential.hash)) {
               return reject(new WrongCredentialException());
             }
             if (!user.email_confirmed) return reject(new EmailNotActivatedException());
