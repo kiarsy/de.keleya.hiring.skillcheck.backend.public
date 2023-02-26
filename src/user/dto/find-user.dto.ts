@@ -24,15 +24,15 @@ export class FindUserDto {
   @IsString()
   @IsOptional()
   @Type(() => String)
-  name: string;
+  name?: string;
 
   @IsBoolean()
   @IsOptional()
   @Type(() => Boolean)
-  credentials: boolean;
+  credentials?: boolean;
 
   @IsString()
   @IsOptional()
   @Type(() => String)
-  email: string;
+  email?: string;
 }
