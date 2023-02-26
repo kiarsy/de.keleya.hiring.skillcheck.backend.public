@@ -67,7 +67,7 @@ export class UserController {
   }
 
   @Delete()
-  @HttpCode(HttpStatus.ACCEPTED)
+  @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ transform: true }))
   @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, false)
   async delete(@Body() deleteUserDto: DeleteUserDto, @Req() req: Request) {
