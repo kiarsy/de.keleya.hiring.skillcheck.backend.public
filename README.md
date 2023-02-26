@@ -78,7 +78,6 @@ yarn test
 
 #### Postman test
 ![postman](Screen%20Shot%202023-02-26%20at%2013.57.56.png)
-
 **Notes**
 - the `Get specific user` endpoint was in the admin folder therefore it had `adminToken`. but its test expected to receive a 401 error on accessing userid:2. IDK if it was a misplace or mistake in the test. to fix this issue I moved it to the `As User` folder.
 - the `Create new user` endpoint can pass the test only the first time, the next time it will raise an exception, in my design email is a unique field.
