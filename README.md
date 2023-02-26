@@ -93,7 +93,7 @@ yarn test
 #### `Create` Endpoint
 - when we delete a user, it is going to be soft delete, and we still keep the information in the user table, this force us to not use unique key on the email field.
 - but the system must prevent users to create a new account with already exist email(not deleted).
-- to accomplish this, when user request for create user, we have to check that this email is not exist(not delete) and then create the user. 
+- to accomplish this, when user requests for create user, we have to check that this email is not exist(not delete) and then create the user. 
 - I use raw sql among with `transaction` in this function to have a single sql command to `check email existence` and `create` the user if it does not already exist. to use transaction in the way that I used, I had to upgrade prisma to `4.8.0`.
 - this function can handle concurrency under high load and wont let two request at same time create two users with same email, one will fail.
   
