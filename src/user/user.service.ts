@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, NotImplementedException } from '@nestjs/
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, User } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { WrongCredentialException } from 'src/common/exceptions/WrongCredentialException';
 import { DuplicateEmailAddressException } from '../common/exceptions/DuplicateEmailAddressException';
 import { EmailNotActivatedException } from '../common/exceptions/EmailNotActivatedException';
 import { JwtTokenUser } from '../common/types/jwtTokenUser';
@@ -214,7 +215,7 @@ export class UserService {
         .then((user) => {
           if (user) {
             if (!matchHashedPassword(authenticateUserDto.password, user.credential.hash)) {
-              return reject(new EmailNotActivatedException());
+              return reject(new WrongCredentialException());
             }
             if (!user.email_confirmed) {
               return reject(new EmailNotActivatedException());
@@ -225,7 +226,7 @@ export class UserService {
             };
             return resolve(this.jwtService.sign(payload, {}));
           } else {
-            return resolve(new NotFoundException('', 'Email/Password is invalid.'));
+            return resolve(new WrongCredentialException());
           }
         })
         .catch(reject);
@@ -248,13 +249,14 @@ export class UserService {
           include: { credential: true },
         })
         .then((user) => {
-          if (!matchHashedPassword(authenticateUserDto.password, user.credential.hash)) {
-            return reject(new EmailNotActivatedException());
-          }
-          if (user && !user.email_confirmed) return reject(new EmailNotActivatedException());
+          if (user) {
+            if (!matchHashedPassword(authenticateUserDto.password, user.credential.hash)) {
+              return reject(new WrongCredentialException());
+            }
+            if (!user.email_confirmed) return reject(new EmailNotActivatedException());
 
-          if (user) return resolve((user && user.email_confirmed) ?? false);
-          else return reject(new NotFoundException('', 'Email/Password is invalid.'));
+            return resolve((user && user.email_confirmed) ?? false);
+          } else return reject(new WrongCredentialException());
         })
         .catch(reject);
     });
