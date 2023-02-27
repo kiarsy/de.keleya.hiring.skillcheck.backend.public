@@ -17,9 +17,10 @@ import { ValidateUserHandler } from './user/queries/validate.query';
 import { UpdateUserHandler } from './user/commands/update.command';
 import { DeleteUserHandler } from './user/commands/delete.command';
 import { CreateUserHandler } from './user/commands/create.command';
+import { AuthenticateUserHandler } from './user/queries/authenticate.query';
 
 export const CommandHandlers = [UpdateUserHandler, DeleteUserHandler, CreateUserHandler];
-export const QueryHandlers = [FindUserHandler, FindUniqueUserHandler, ValidateUserHandler];
+export const QueryHandlers = [FindUserHandler, FindUniqueUserHandler, ValidateUserHandler, AuthenticateUserHandler];
 
 @Module({
   imports: [

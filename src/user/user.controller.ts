@@ -95,15 +95,11 @@ export class UserController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   async userAuthenticate(@Body() authenticateUserDto: AuthenticateUserDto) {
-    return new Promise((resolve, reject) => {
-      this.usersService
-        .authenticate(authenticateUserDto)
-        .then((it) =>
-          resolve({
-            credentials: it,
-          }),
-        )
-        .catch((e) => reject(e));
+    return this.queryBus.execute(authenticateUserDto).then((it) => {
+      it = { ...it, credential: undefined };
+      return {
+        credentials: it,
+      };
     });
   }
 
