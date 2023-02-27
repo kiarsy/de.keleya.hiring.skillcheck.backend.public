@@ -78,6 +78,7 @@ describe('UserController', () => {
       return Promise.resolve(dto);
     }),
   };
+
   afterAll(async () => {
     await app.close();
   });

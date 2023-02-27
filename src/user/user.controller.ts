@@ -96,7 +96,6 @@ export class UserController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   async userAuthenticate(@Body() authenticateUserDto: AuthenticateUserDto) {
-    console.log('HO');
     return this.queryBus.execute(authenticateUserDto).then((credentials) => {
       credentials = { ...credentials, credential: undefined };
       return {
