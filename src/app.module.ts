@@ -11,11 +11,11 @@ import { JwtStrategy } from './common/strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { AppController } from './app.controller';
 import { CqrsModule } from '@nestjs/cqrs';
-import { FindHandler } from './user/queries/find.query';
-import { FindUniqueHandler } from './user/queries/find-unique.query';
+import { FindUserHandler } from './user/queries/find.query';
+import { FindUniqueUserHandler } from './user/queries/find-unique.query';
 
 export const CommandHandlers = [];
-export const QueryHandlers = [FindHandler, FindUniqueHandler];
+export const QueryHandlers = [FindUserHandler, FindUniqueUserHandler];
 
 @Module({
   imports: [

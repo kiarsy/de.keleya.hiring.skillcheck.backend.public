@@ -1,15 +1,5 @@
-import { Type } from 'class-transformer';
-import { IsNumber } from 'class-validator';
+import { User } from '@prisma/client';
 
 export class FindUniqueDto {
-  @IsNumber()
-  @Type(() => Number)
-  id: number;
-
-  includeCredentials = false;
-
-  constructor(id: number, includeCredentials: boolean) {
-    this.id = id;
-    this.includeCredentials = includeCredentials;
-  }
+  constructor(readonly data: Partial<User>) {}
 }

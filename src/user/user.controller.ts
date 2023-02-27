@@ -50,7 +50,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @EndpointRestrictedAccess('id', RestrictedAccessMethod.params, true)
   async findUnique(@Param('id', ParseIntPipe) id) {
-    return this.queryBus.execute(new FindUniqueDto(id, false));
+    return this.queryBus.execute(new FindUniqueDto({ id: id, is_deleted: false }));
   }
 
   @Post()
@@ -58,14 +58,15 @@ export class UserController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   async create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    await this.commandBus.execute(createUserDto);
+    return this.queryBus.execute(new FindUniqueDto({ email: createUserDto.email, is_deleted: false }));
   }
 
   @Patch()
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, true)
-  async update(@Body() updateUserDto: UpdateUserDto, @Req() req: Request) {
+  async update(@Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(updateUserDto);
   }
 

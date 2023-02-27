@@ -25,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(payload) {
     if (isJwtTokenUser(payload)) {
-      const user = await this.queryBus.execute(new FindUniqueDto(payload.id, false));
+      const user = await this.queryBus.execute(new FindUniqueDto({ id: payload.id }));
       // check user activation
       if (user && !user.email_confirmed) throw new EmailNotActivatedException();
       if (user) {
