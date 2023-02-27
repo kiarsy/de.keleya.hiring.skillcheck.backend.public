@@ -4,7 +4,7 @@ import { PrismaService } from 'src/prisma.services';
 import { FindUserDto } from '../dto/find-user.dto';
 
 @QueryHandler(FindUserDto)
-export class FindHandler implements IQueryHandler<FindUserDto> {
+export class FindUserHandler implements IQueryHandler<FindUserDto> {
   constructor(private readonly prisma: PrismaService) {} // Here we would inject what is necessary to retrieve our data
 
   execute(query: FindUserDto): Promise<User[]> {
