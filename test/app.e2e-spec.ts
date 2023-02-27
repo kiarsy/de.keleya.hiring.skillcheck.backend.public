@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Query } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { HttpStatus } from '@nestjs/common';
@@ -9,8 +9,10 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from '../src/common/strategies/jwt.strategy';
 import { PrismaService } from '../src/prisma.services';
 import { UserController } from '../src/user/user.controller';
-import { UserService } from '../src/user/user.service';
+// import { UserService } from '../src/user/user.service';
 import { User } from '@prisma/client';
+import { CommandBus, CqrsModule, QueryBus } from '@nestjs/cqrs';
+import { FindUniqueDto } from '../src/user/dto/find-unique';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -31,7 +33,7 @@ describe('AppController (e2e)', () => {
 
 describe('UserController', () => {
   let userController: UserController;
-  let userService: UserService;
+  // let userService: UserService;
   let jwtService: JwtService;
   let app: INestApplication;
   let userAuthorization = '';
@@ -62,31 +64,31 @@ describe('UserController', () => {
     is_deleted: false,
   };
 
-  const mockUserService = {
-    find: jest.fn((it) => {
-      return Promise.resolve(it);
+  const mockCommandBus = {
+    execute: jest.fn(() => {
+      return Promise.resolve();
     }),
-    findUnique: jest.fn((id) => {
-      if (id.id == 1) return Promise.resolve(mockUser);
-      else return Promise.resolve(mockAdmin);
-    }),
-    create: jest.fn((createUserDto) => Promise.resolve({ ...createUserDto, ...mockUser })),
-    update: jest.fn((updateUserDto) => Promise.resolve({ ...updateUserDto, ...mockUser })),
-    delete: jest.fn((deleteUserDto) => Promise.resolve({ ...deleteUserDto, ...mockUser })),
-    validateToken: jest.fn(() => Promise.resolve()),
-    authenticate: jest.fn(() => Promise.resolve(mockUser)),
-    authenticateAndGetJwtToken: jest.fn(() => Promise.resolve('token')),
   };
 
+  const mockQueryBus = {
+    execute: jest.fn((dto) => {
+      if (dto instanceof FindUniqueDto)
+        if (dto.data.id == 1) return Promise.resolve(mockUser);
+        else return Promise.resolve(mockAdmin);
+      return Promise.resolve(dto);
+    }),
+  };
   afterAll(async () => {
     await app.close();
   });
 
   beforeAll(async () => {
+    jest.mock;
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UserController],
       imports: [
         PassportModule,
+        CqrsModule,
         JwtModule.register({
           secret: 'JWT_SECRET',
           signOptions: {
@@ -95,17 +97,32 @@ describe('UserController', () => {
           },
         }),
       ],
-      providers: [UserService, PrismaService, JwtStrategy, ConfigService],
+      providers: [
+        PrismaService,
+        JwtStrategy,
+        ConfigService,
+        {
+          provide: CommandBus,
+          useFactory: () => mockCommandBus,
+        },
+        {
+          provide: QueryBus,
+          useFactory: () => mockQueryBus,
+        },
+      ],
     })
-      .overrideProvider(UserService)
-      .useValue(mockUserService)
+      // .overrideProvider(CommandBus)
+      // .useValue(mockCommandBus)
+
+      // .overrideProvider(QueryBus)
+      // .useValue(mockQueryBus)
 
       .compile();
 
     app = module.createNestApplication();
     await app.init();
 
-    userService = module.get<UserService>(UserService);
+    // userService = module.get<UserService>(UserService);
     userController = module.get<UserController>(UserController);
     jwtService = module.get<JwtService>(JwtService);
 
@@ -125,7 +142,7 @@ describe('UserController', () => {
 
   it('should be defined', () => {
     expect(userController).toBeDefined();
-    expect(userService).toBeDefined();
+    // expect(userService).toBeDefined();
   });
 
   describe('EndpointRestrictedAccess decorator', () => {
