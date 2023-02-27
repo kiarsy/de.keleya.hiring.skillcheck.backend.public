@@ -1,7 +1,7 @@
 import { ValidateDto } from '../dto/validate.dto';
 import { ValidateUserHandler } from './validate.query';
 
-describe('Validate token', () => {
+describe('ValidateUser QueryHandler', () => {
   let handler: ValidateUserHandler;
 
   const jwtService = {

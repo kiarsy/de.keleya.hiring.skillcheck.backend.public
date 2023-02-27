@@ -4,7 +4,7 @@ import { HashPassword } from '../../common/utils/password';
 import { mockPrisma } from '../../common/test/test-helpers';
 import { AuthenticateUserHandler } from './authenticate.query';
 
-describe('Authenticate', () => {
+describe('AuthenticateUser QueryHandler', () => {
   let handler: AuthenticateUserHandler;
 
   const prisma = mockPrisma;

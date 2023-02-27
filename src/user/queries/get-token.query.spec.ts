@@ -4,7 +4,7 @@ import { HashPassword } from '../../common/utils/password';
 import { mockPrisma } from '../../common/test/test-helpers';
 import { GetUserTokenHandler } from './get-token.query';
 
-describe('Get Token', () => {
+describe('GetUserToken QueryHandler', () => {
   let handler: GetUserTokenHandler;
 
   const prisma = mockPrisma;
