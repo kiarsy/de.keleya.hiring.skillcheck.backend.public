@@ -9,7 +9,7 @@ export class FindUniqueUserHandler implements IQueryHandler<FindUniqueDto> {
   constructor(private readonly prisma: PrismaService) {} // Here we would inject what is necessary to retrieve our data
 
   execute(query: FindUniqueDto): Promise<User> {
-    const is_deleted = query.data.is_admin ? query.data.is_admin : false;
+    const is_deleted = query.data.is_deleted === true ? true : false;
     const whereUnique: Prisma.UserWhereInput = { ...query.data, is_deleted };
     return new Promise((resolve, reject) => {
       this.prisma.user

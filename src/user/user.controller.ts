@@ -79,7 +79,7 @@ export class UserController {
   @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, true)
   async delete(@Body() deleteUserDto: DeleteUserDto) {
     await this.commandBus.execute(deleteUserDto);
-    return this.queryBus.execute(new FindUniqueDto({ id: deleteUserDto.id })).then((users) => {
+    return this.queryBus.execute(new FindUniqueDto({ id: deleteUserDto.id, is_deleted: true })).then((users) => {
       return { users };
     });
   }
