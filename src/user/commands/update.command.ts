@@ -10,7 +10,7 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 export class UpdateUserHandler implements ICommandHandler<UpdateUserDto> {
   constructor(private readonly prisma: PrismaService) {}
 
-  async execute(command: UpdateUserDto): Promise<boolean> {
+  async execute(command: UpdateUserDto): Promise<void> {
     const data: Prisma.XOR<Prisma.UserUpdateInput, Prisma.UserUncheckedUpdateInput> = {
       updatedAt: new Date(),
     };
@@ -38,7 +38,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserDto> {
           data,
         })
         .then(() => {
-          resolve(true);
+          resolve();
         })
         .catch(reject);
     });

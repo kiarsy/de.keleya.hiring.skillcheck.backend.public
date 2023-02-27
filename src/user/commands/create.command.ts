@@ -9,7 +9,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 export class CreateUserHandler implements ICommandHandler<CreateUserDto> {
   constructor(private readonly prisma: PrismaService) {}
 
-  async execute(command: CreateUserDto): Promise<boolean> {
+  async execute(command: CreateUserDto): Promise<void> {
     return new Promise(async (resolve, reject) => {
       let rowId = 0;
       this.prisma
@@ -41,7 +41,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUserDto> {
           });
         })
         .then(() => {
-          resolve(true);
+          resolve();
         })
         .catch(reject);
     });

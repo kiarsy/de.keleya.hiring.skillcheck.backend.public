@@ -7,7 +7,7 @@ import { DeleteUserDto } from '../dto/delete-user.dto';
 export class DeleteUserHandler implements ICommandHandler<DeleteUserDto> {
   constructor(private readonly prisma: PrismaService) {}
 
-  async execute(command: DeleteUserDto): Promise<boolean> {
+  async execute(command: DeleteUserDto): Promise<void> {
     return new Promise((resolve, reject) => {
       this.prisma.user
         .update({
@@ -16,7 +16,7 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserDto> {
         })
         .then((user) => {
           if (user) {
-            resolve(true);
+            resolve();
           } else {
             reject(new NotFoundException('User not found.'));
           }
