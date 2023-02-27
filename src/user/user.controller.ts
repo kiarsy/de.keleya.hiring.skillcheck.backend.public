@@ -29,6 +29,7 @@ import { UserService } from './user.service';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FindUniqueDto } from './dto/find-unique';
 import { ValidateDto } from './dto/validate.dto';
+import { GetUserTokenDto } from './dto/get-token-user.dto';
 
 @Controller('user')
 @UseGuards(JwtAuthGuard)
@@ -78,8 +79,8 @@ export class UserController {
   @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, true)
   async delete(@Body() deleteUserDto: DeleteUserDto) {
     await this.commandBus.execute(deleteUserDto);
-    return this.queryBus.execute(new FindUniqueDto({ id: deleteUserDto.id })).then((it) => {
-      return { users: it };
+    return this.queryBus.execute(new FindUniqueDto({ id: deleteUserDto.id })).then((users) => {
+      return { users };
     });
   }
 
@@ -95,10 +96,10 @@ export class UserController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   async userAuthenticate(@Body() authenticateUserDto: AuthenticateUserDto) {
-    return this.queryBus.execute(authenticateUserDto).then((it) => {
-      it = { ...it, credential: undefined };
+    return this.queryBus.execute(authenticateUserDto).then((credentials) => {
+      credentials = { ...credentials, credential: undefined };
       return {
-        credentials: it,
+        credentials,
       };
     });
   }
@@ -107,16 +108,9 @@ export class UserController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @EndpointIsPublic()
   @HttpCode(HttpStatus.OK)
-  async userGetToken(@Body() authenticateUserDto: AuthenticateUserDto) {
-    return new Promise((resolve, reject) => {
-      this.usersService
-        .authenticateAndGetJwtToken(authenticateUserDto)
-        .then((it) =>
-          resolve({
-            token: it,
-          }),
-        )
-        .catch(reject);
+  async userGetToken(@Body() authenticateUserDto: GetUserTokenDto) {
+    return this.queryBus.execute(authenticateUserDto).then((token) => {
+      return { token };
     });
   }
 }
