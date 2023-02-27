@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Prisma, User } from '@prisma/client';
-import { PrismaService } from 'src/prisma.services';
+import { PrismaService } from '../../prisma.services';
 import { FindUniqueDto } from '../dto/find-unique';
 
 @QueryHandler(FindUniqueDto)

@@ -25,7 +25,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserService } from './user.service';
+// import { UserService } from './user.service';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FindUniqueDto } from './dto/find-unique';
 import { ValidateDto } from './dto/validate.dto';
@@ -35,7 +35,7 @@ import { GetUserTokenDto } from './dto/get-token-user.dto';
 @UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(
-    private readonly usersService: UserService,
+    // private readonly usersService: UserService,
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
@@ -96,6 +96,7 @@ export class UserController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   async userAuthenticate(@Body() authenticateUserDto: AuthenticateUserDto) {
+    console.log('HO');
     return this.queryBus.execute(authenticateUserDto).then((credentials) => {
       credentials = { ...credentials, credential: undefined };
       return {

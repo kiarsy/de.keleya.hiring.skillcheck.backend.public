@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { randomUUID } from 'crypto';
-import { DuplicateEmailAddressException } from 'src/common/exceptions/DuplicateEmailAddressException';
-import { HashPassword } from 'src/common/utils/password';
-import { PrismaService } from 'src/prisma.services';
+import { DuplicateEmailAddressException } from '../../common/exceptions/DuplicateEmailAddressException';
+import { HashPassword } from '../../common/utils/password';
+import { PrismaService } from '../../prisma.services';
 import { CreateUserDto } from '../dto/create-user.dto';
 
 @CommandHandler(CreateUserDto)

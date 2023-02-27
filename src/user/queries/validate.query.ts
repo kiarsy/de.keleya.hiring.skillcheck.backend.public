@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { JwtTokenUser } from 'src/common/types/jwtTokenUser';
+import { JwtTokenUser } from '../../common/types/jwtTokenUser';
 import { ValidateDto } from '../dto/validate.dto';
 
 @QueryHandler(ValidateDto)

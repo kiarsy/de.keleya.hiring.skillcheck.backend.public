@@ -2,16 +2,16 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UserService } from '../../user/user.service';
+// import { UserService } from '../../user/user.service';
 import { isJwtTokenUser } from '../types/jwtTokenUser';
 import { EmailNotActivatedException } from '../exceptions/EmailNotActivatedException';
 import { QueryBus } from '@nestjs/cqrs';
-import { FindUniqueDto } from 'src/user/dto/find-unique';
+import { FindUniqueDto } from '../../user/dto/find-unique';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
-    private readonly userService: UserService,
+    // private readonly userService: UserService,
     private readonly configService: ConfigService,
     private readonly queryBus: QueryBus,
   ) {
@@ -25,6 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(payload) {
     if (isJwtTokenUser(payload)) {
+      // console.log(this.queryBus.execute);
       const user = await this.queryBus.execute(new FindUniqueDto({ id: payload.id }));
       // check user activation
       if (user && !user.email_confirmed) throw new EmailNotActivatedException();

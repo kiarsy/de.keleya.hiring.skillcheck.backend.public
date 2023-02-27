@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PrismaService } from 'src/prisma.services';
+import { PrismaService } from '../../prisma.services';
 import { DeleteUserDto } from '../dto/delete-user.dto';
 
 @CommandHandler(DeleteUserDto)
