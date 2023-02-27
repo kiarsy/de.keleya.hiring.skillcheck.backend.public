@@ -26,7 +26,6 @@ export class AuthenticateUserHandler implements IQueryHandler<AuthenticateUserDt
             }
             if (!user.email_confirmed) return reject(new EmailNotActivatedException());
 
-            console.log(user);
             return resolve(user);
           } else return reject(new WrongCredentialException());
         })
