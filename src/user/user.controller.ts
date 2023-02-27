@@ -75,8 +75,11 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ transform: true }))
   @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, true)
-  async delete(@Body() deleteUserDto: DeleteUserDto, @Req() req: Request) {
-    return this.usersService.delete(deleteUserDto);
+  async delete(@Body() deleteUserDto: DeleteUserDto) {
+    await this.commandBus.execute(deleteUserDto);
+    return this.queryBus.execute(new FindUniqueDto({ id: deleteUserDto.id })).then((it) => {
+      return { users: it };
+    });
   }
 
   @Post('validate')

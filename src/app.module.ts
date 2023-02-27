@@ -14,8 +14,10 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { FindUserHandler } from './user/queries/find.query';
 import { FindUniqueUserHandler } from './user/queries/find-unique.query';
 import { UpdateUserHandler } from './user/commands/update.command';
+import { DeleteUserHandler } from './user/commands/delete.command';
+import { CreateUserHandler } from './user/commands/create.command';
 
-export const CommandHandlers = [UpdateUserHandler];
+export const CommandHandlers = [UpdateUserHandler, DeleteUserHandler, CreateUserHandler];
 export const QueryHandlers = [FindUserHandler, FindUniqueUserHandler];
 
 @Module({
