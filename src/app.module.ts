@@ -10,6 +10,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './common/strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { AppController } from './app.controller';
+import { CqrsModule } from '@nestjs/cqrs';
+import { FindHandler } from './user/queries/find.query';
+import { FindUniqueHandler } from './user/queries/find-unique.query';
+
+export const CommandHandlers = [];
+export const QueryHandlers = [FindHandler, FindUniqueHandler];
 
 @Module({
   imports: [
@@ -36,9 +42,12 @@ import { AppController } from './app.controller';
         },
       }),
     }),
+    CqrsModule,
   ],
   controllers: [AppController, UserController],
   providers: [
+    ...CommandHandlers,
+    ...QueryHandlers,
     UserService,
     PrismaService,
     ConfigService,

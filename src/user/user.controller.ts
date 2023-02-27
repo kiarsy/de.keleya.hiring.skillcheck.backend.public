@@ -27,6 +27,7 @@ import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { FindUniqueDto } from './dto/find-unique';
 
 @Controller('user')
 @UseGuards(JwtAuthGuard)
@@ -42,14 +43,14 @@ export class UserController {
   @EndpointRestrictedAccess('ids', RestrictedAccessMethod.query)
   @HttpCode(HttpStatus.OK)
   async find(@Query() findUserDto: FindUserDto) {
-    return this.usersService.find(findUserDto);
+    return this.queryBus.execute(findUserDto);
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @EndpointRestrictedAccess('id', RestrictedAccessMethod.params, true)
   async findUnique(@Param('id', ParseIntPipe) id) {
-    return this.usersService.findUnique({ id: id });
+    return this.queryBus.execute(new FindUniqueDto(id, false));
   }
 
   @Post()
