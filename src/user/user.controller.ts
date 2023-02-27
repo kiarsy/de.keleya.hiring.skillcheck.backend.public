@@ -67,7 +67,8 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @EndpointRestrictedAccess('id', RestrictedAccessMethod.body, true)
   async update(@Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(updateUserDto);
+    await this.commandBus.execute(updateUserDto);
+    return this.queryBus.execute(new FindUniqueDto({ id: updateUserDto.id }));
   }
 
   @Delete()

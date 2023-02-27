@@ -13,8 +13,9 @@ import { AppController } from './app.controller';
 import { CqrsModule } from '@nestjs/cqrs';
 import { FindUserHandler } from './user/queries/find.query';
 import { FindUniqueUserHandler } from './user/queries/find-unique.query';
+import { UpdateUserHandler } from './user/commands/update.command';
 
-export const CommandHandlers = [];
+export const CommandHandlers = [UpdateUserHandler];
 export const QueryHandlers = [FindUserHandler, FindUniqueUserHandler];
 
 @Module({
