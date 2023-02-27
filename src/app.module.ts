@@ -13,12 +13,13 @@ import { AppController } from './app.controller';
 import { CqrsModule } from '@nestjs/cqrs';
 import { FindUserHandler } from './user/queries/find.query';
 import { FindUniqueUserHandler } from './user/queries/find-unique.query';
+import { ValidateUserHandler } from './user/queries/validate.query';
 import { UpdateUserHandler } from './user/commands/update.command';
 import { DeleteUserHandler } from './user/commands/delete.command';
 import { CreateUserHandler } from './user/commands/create.command';
 
 export const CommandHandlers = [UpdateUserHandler, DeleteUserHandler, CreateUserHandler];
-export const QueryHandlers = [FindUserHandler, FindUniqueUserHandler];
+export const QueryHandlers = [FindUserHandler, FindUniqueUserHandler, ValidateUserHandler];
 
 @Module({
   imports: [

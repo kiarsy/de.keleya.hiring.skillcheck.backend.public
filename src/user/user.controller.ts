@@ -28,6 +28,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FindUniqueDto } from './dto/find-unique';
+import { ValidateDto } from './dto/validate.dto';
 
 @Controller('user')
 @UseGuards(JwtAuthGuard)
@@ -86,13 +87,9 @@ export class UserController {
   @EndpointIsPublic()
   @HttpCode(HttpStatus.OK)
   async userValidateToken(@Req() req: Request) {
-    return new Promise((resolve) => {
-      this.usersService
-        .validateToken(ExtractJwt.fromAuthHeaderAsBearerToken()(req))
-        .then(() => resolve(true))
-        .catch(() => resolve(false));
-    });
+    return this.queryBus.execute(new ValidateDto(ExtractJwt.fromAuthHeaderAsBearerToken()(req)));
   }
+
   @Post('authenticate')
   @EndpointIsPublic()
   @UsePipes(new ValidationPipe({ transform: true }))
